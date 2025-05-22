@@ -366,4 +366,29 @@ label {
 
 .feature-card:hover h4 {
   color: var(--primary-color);
+}
+
+/* Shareable link section */
+.alert-success {
+  background-color: rgba(74, 107, 175, 0.1);
+  border: none;
+  border-left: 4px solid var(--primary-color);
+  border-radius: 8px;
+  padding: 1.2rem;
+}
+
+#shareable-link {
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 0.8rem;
+  border-radius: 6px;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.9rem;
+  transition: var(--transition);
+}
+
+#shareable-link:focus {
+  background-color: white;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem rgba(74, 107, 175, 0.2);
 } 

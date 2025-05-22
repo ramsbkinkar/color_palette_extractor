@@ -11,6 +11,22 @@
         </a>
     </div>
     
+    <!-- Shareable Link Section -->
+    <div class="alert alert-success mb-4">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <h5 class="mb-1"><i class="fas fa-link me-2"></i>Shareable Link</h5>
+                <p class="mb-0 small text-muted">Share this palette with others using this link</p>
+            </div>
+            <button class="btn btn-sm" onclick="copyShareableLink()">
+                <i class="fas fa-copy me-1"></i>Copy Link
+            </button>
+        </div>
+        <div class="mt-2">
+            <input type="text" class="form-control" id="shareable-link" value="{{ shareable_url }}" readonly>
+        </div>
+    </div>
+    
     <div class="image-container">
         <h3 class="mb-3">Uploaded Image</h3>
         <img src="{{ image_url }}" alt="Uploaded image" class="uploaded-image">
@@ -33,13 +49,13 @@
     </div>
     
     <div class="mt-5 text-center">
-        <h3 class="mb-4">Export Options</h3>
+        <h3 class="mb-4">Copy Options</h3>
         <div class="d-flex justify-content-center gap-3">
-            <button class="btn me-2" onclick="exportPalette('css')">
-                <i class="fas fa-file-code me-2"></i>Export as CSS
+            <button class="btn me-2" onclick="copyPalette('css')">
+                <i class="fas fa-copy me-2"></i>Copy as CSS
             </button>
-            <button class="btn me-2" onclick="exportPalette('json')">
-                <i class="fas fa-file-code me-2"></i>Export as JSON
+            <button class="btn me-2" onclick="copyPalette('json')">
+                <i class="fas fa-copy me-2"></i>Copy as JSON
             </button>
         </div>
     </div>
@@ -48,6 +64,16 @@
 
 {% block scripts %}
 <script>
+    // Function to copy shareable link
+    function copyShareableLink() {
+        const shareableLink = document.getElementById('shareable-link');
+        shareableLink.select();
+        document.execCommand('copy');
+        
+        // Show copied feedback
+        showToast(`Link copied to clipboard!`);
+    }
+    
     // Function to copy color code to clipboard
     function copyToClipboard(text) {
         const textarea = document.createElement('textarea');
@@ -58,8 +84,13 @@
         document.body.removeChild(textarea);
         
         // Show copied feedback
+        showToast(`${text} copied to clipboard!`);
+    }
+    
+    // Function to show toast notification
+    function showToast(message) {
         const toast = document.createElement('div');
-        toast.textContent = `${text} copied to clipboard!`;
+        toast.textContent = message;
         toast.style.position = 'fixed';
         toast.style.bottom = '20px';
         toast.style.left = '50%';
@@ -83,8 +114,8 @@
         }, 2000);
     }
     
-    // Function to export palette in different formats
-    function exportPalette(format) {
+    // Function to copy palette in different formats
+    function copyPalette(format) {
         const colors = [
             {% for color, percentage in colors %}
             {
@@ -95,8 +126,6 @@
         ];
         
         let content = '';
-        let filename = 'color-palette';
-        let mimeType = '';
         
         if (format === 'css') {
             content = ':root {\n';
@@ -104,8 +133,7 @@
                 content += `  --color-${index + 1}: ${color.hex}; /* ${color.percentage}% */\n`;
             });
             content += '}';
-            filename += '.css';
-            mimeType = 'text/css';
+            showToast('CSS code copied to clipboard!');
         } else if (format === 'json') {
             content = JSON.stringify({
                 palette: colors.map(color => ({
@@ -113,18 +141,16 @@
                     percentage: color.percentage
                 }))
             }, null, 2);
-            filename += '.json';
-            mimeType = 'application/json';
+            showToast('JSON code copied to clipboard!');
         }
         
-        // Create and download file
-        const blob = new Blob([content], { type: mimeType });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        // Copy to clipboard
+        const textarea = document.createElement('textarea');
+        textarea.value = content;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
     }
     
     // Add animation styles
