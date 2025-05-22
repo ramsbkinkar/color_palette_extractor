@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Color Palette Extractor - Upload{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2 class="mb-4">Upload an Image</h2>
+    
+    <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data">
+        <div class="upload-area" id="drop-area">
+            <i class="fas fa-cloud-upload-alt fa-3x mb-3" style="color: var(--primary-color);"></i>
+            <p>Drag and drop an image here or click to select</p>
+            <input type="file" name="file" id="file-input" class="file-input" accept="image/*">
+            <label for="file-input" class="upload-btn">
+                <i class="fas fa-image me-2"></i>Select Image
+            </label>
+        </div>
+        
+        <div class="form-group">
+            <label for="num-colors">Number of colors to extract (1-10):</label>
+            <input type="range" class="form-range" id="num-colors" name="num_colors" min="1" max="10" value="5">
+            <div class="d-flex justify-content-between">
+                <span>1</span>
+                <span id="color-value" class="fw-bold" style="color: var(--primary-color);">5</span>
+                <span>10</span>
+            </div>
+        </div>
+        
+        <button type="submit" class="btn">
+            <i class="fas fa-palette me-2"></i>Extract Colors
+        </button>
+    </form>
+</div>
+
+<div class="card how-it-works">
+    <h3 class="mb-4">How It Works</h3>
+    <div class="row">
+        <div class="col-md-4 text-center mb-4 feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-upload fa-2x"></i>
+            </div>
+            <h4>Upload</h4>
+            <p>Select or drag & drop any image file</p>
+        </div>
+        <div class="col-md-4 text-center mb-4 feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-cogs fa-2x"></i>
+            </div>
+            <h4>Process</h4>
+            <p>Our algorithm analyzes the image colors</p>
+        </div>
+        <div class="col-md-4 text-center mb-4 feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-palette fa-2x"></i>
+            </div>
+            <h4>Extract</h4>
+            <p>Get the dominant colors with HEX codes</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Update the slider value display
+    document.getElementById('num-colors').addEventListener('input', function() {
+        document.getElementById('color-value').textContent = this.value;
+    });
+    
+    // Handle drag and drop functionality
+    const dropArea = document.getElementById('drop-area');
+    const fileInput = document.getElementById('file-input');
+    
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropArea.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, unhighlight, false);
+    });
+    
+    function highlight() {
+        dropArea.classList.add('border-primary');
+    }
+    
+    function unhighlight() {
+        dropArea.classList.remove('border-primary');
+    }
+    
+    dropArea.addEventListener('drop', handleDrop, false);
+    
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        fileInput.files = files;
+        
+        // Show file name
+        if (files[0]) {
+            const fileName = files[0].name;
+            dropArea.querySelector('p').textContent = `Selected: ${fileName}`;
+        }
+    }
+    
+    // Show selected filename when using the file input
+    fileInput.addEventListener('change', function() {
+        if (this.files[0]) {
+            const fileName = this.files[0].name;
+            dropArea.querySelector('p').textContent = `Selected: ${fileName}`;
+        }
+    });
+</script>
+{% endblock %} 

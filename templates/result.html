@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Color Palette Extracted - Results{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="text-center mb-4">
+        <h2 class="mb-3">Color Palette Results</h2>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary mb-4">
+            <i class="fas fa-arrow-left me-2"></i>Extract Another Image
+        </a>
+    </div>
+    
+    <div class="image-container">
+        <h3 class="mb-3">Uploaded Image</h3>
+        <img src="{{ image_url }}" alt="Uploaded image" class="uploaded-image">
+    </div>
+    
+    <h3 class="mb-4">Extracted Color Palette</h3>
+    <div class="color-palette">
+        {% for color, percentage in colors %}
+        <div class="color-card" style="animation: fadeIn {{loop.index0 * 0.1 + 0.2}}s forwards;">
+            <div class="color-sample" style="background-color: {{ color }};"></div>
+            <div class="color-info">
+                <div class="color-hex">{{ color }}</div>
+                <div class="color-percentage">{{ percentage|round(1) }}%</div>
+                <button class="btn btn-sm mt-2" onclick="copyToClipboard('{{ color }}')">
+                    <i class="fas fa-copy me-1"></i>Copy
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="mt-5 text-center">
+        <h3 class="mb-4">Export Options</h3>
+        <div class="d-flex justify-content-center gap-3">
+            <button class="btn me-2" onclick="exportPalette('css')">
+                <i class="fas fa-file-code me-2"></i>Export as CSS
+            </button>
+            <button class="btn me-2" onclick="exportPalette('json')">
+                <i class="fas fa-file-code me-2"></i>Export as JSON
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Function to copy color code to clipboard
+    function copyToClipboard(text) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        
+        // Show copied feedback
+        const toast = document.createElement('div');
+        toast.textContent = `${text} copied to clipboard!`;
+        toast.style.position = 'fixed';
+        toast.style.bottom = '20px';
+        toast.style.left = '50%';
+        toast.style.transform = 'translateX(-50%)';
+        toast.style.background = 'var(--primary-gradient)';
+        toast.style.color = 'white';
+        toast.style.padding = '10px 20px';
+        toast.style.borderRadius = '50px';
+        toast.style.zIndex = '1000';
+        toast.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)';
+        document.body.appendChild(toast);
+        
+        // Add animation
+        toast.style.animation = 'fadeInUp 0.3s forwards';
+        
+        setTimeout(() => {
+            toast.style.animation = 'fadeOutDown 0.3s forwards';
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 300);
+        }, 2000);
+    }
+    
+    // Function to export palette in different formats
+    function exportPalette(format) {
+        const colors = [
+            {% for color, percentage in colors %}
+            {
+                hex: '{{ color }}',
+                percentage: {{ percentage|round(1) }}
+            },
+            {% endfor %}
+        ];
+        
+        let content = '';
+        let filename = 'color-palette';
+        let mimeType = '';
+        
+        if (format === 'css') {
+            content = ':root {\n';
+            colors.forEach((color, index) => {
+                content += `  --color-${index + 1}: ${color.hex}; /* ${color.percentage}% */\n`;
+            });
+            content += '}';
+            filename += '.css';
+            mimeType = 'text/css';
+        } else if (format === 'json') {
+            content = JSON.stringify({
+                palette: colors.map(color => ({
+                    hex: color.hex,
+                    percentage: color.percentage
+                }))
+            }, null, 2);
+            filename += '.json';
+            mimeType = 'application/json';
+        }
+        
+        // Create and download file
+        const blob = new Blob([content], { type: mimeType });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+    
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translate(-50%, 20px);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+        
+        @keyframes fadeOutDown {
+            from {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+            to {
+                opacity: 0;
+                transform: translate(-50%, 20px);
+            }
+        }
+    `;
+    document.head.appendChild(style);
+</script>
+{% endblock %} 
